@@ -1,0 +1,43 @@
+# Pipeline de CI/CD para AppShell_JAGS (PWA) -> GitLab Pages
+stages:
+  - build
+  - test
+  - deploy
+
+# 1) BUILD: copia solo los archivos de la PWA a public/
+build:
+  stage: build
+  image: alpine:latest
+  script:
+    - mkdir public
+    - cp index.html app.js app.css sw.js manifest.webmanifest Icon2.png public/
+  artifacts:
+    paths:
+      - public
+
+# 2) TEST: verifica que estén los archivos clave de la PWA
+test:
+  stage: test
+  image: alpine:latest
+  script:
+    - test -f public/index.html
+    - test -f public/manifest.webmanifest
+    - test -f public/sw.js
+    - test -f public/app.js
+    - echo "Archivos de la PWA verificados correctamente"
+
+# 3) DEPLOY: publica en GitLab Pages (despliegue continuo en main)
+pages:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Publicando AppShell_JAGS en GitLab Pages..."
+  pages: true
+  artifacts:
+    paths:
+      - public
+  environment:
+    name: produccion
+    url: $CI_PAGES_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"

@@ -9,7 +9,7 @@ const UPDATED_COL = 'updated_ar';   // Escribi mal el nombre en la DB xd
 const REST = `${SUPABASE_URL}/rest/v1/${TABLE}`;
 const HEADERS = { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' };
 if (SUPABASE_KEY.startsWith('eyJ')) HEADERS.Authorization = `Bearer ${SUPABASE_KEY}`; 
-const configured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_KEY.startsWith('TU-');
+const configured = !SUPABASE_URL.includes('Gestor-Tareas') && !SUPABASE_KEY.startsWith('TU-');
 
 const LS_TASKS = 'tareas.sb.items.v1', LS_QUEUE = 'tareas.sb.cola.v1';
 const read = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
@@ -83,6 +83,7 @@ function renderBanner() {
   else if (offline) msg = 'Reconectando con el servidor… tus cambios se enviarán en cuanto responda.';
   b.textContent = msg; b.classList.toggle('show', !!msg);
 }
+
 addEventListener('offline', () => { offline = true; renderBanner(); });
 addEventListener('online', () => { renderBanner(); sync(); });
 setInterval(() => { if (offline || queue.length) sync(); }, 15000);
@@ -95,10 +96,12 @@ function addTask(f) {
   enqueue('create', t.id, { title: t.title, notes: t.notes, completed: false, due_date: t.due_date });
   render(); sync();
 }
+
 function updateTask(id, patch) {
   const t = tasks.find(x => x.id === id); if (!t) return;
   Object.assign(t, patch); enqueue('update', id, patch); render(); sync();
 }
+
 function removeTask(id) { tasks = tasks.filter(x => x.id !== id); enqueue('delete', id); render(); sync(); }
 
 /* ============ Interfaz ============ */
