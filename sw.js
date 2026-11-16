@@ -1,10 +1,12 @@
 
-const CACHE = 'tareas-sb-v1';
+const CACHE = 'tareas-sb-__v1__';
 
 const SHELL = [
-    './', 
-    './index.html', 
-    './manifest.webmanifest', 
+    './',
+    './index.html',
+    './app.js',
+    './app.css',
+    './manifest.webmanifest',
     './Icon2.png'
 ];
  
