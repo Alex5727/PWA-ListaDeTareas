@@ -14,13 +14,21 @@ const TIPOS = {
   '.json': 'application/json',
 };
 
+// Lista fija de archivos permitidos, leída una sola vez al iniciar.
+// La ruta que llega en la petición solo se usa para buscar en esta lista;
+// nunca se usa para construir una ruta de disco.
+const ARCHIVOS = new Map(
+  fs.readdirSync(RAIZ).map(nombre => ['/' + nombre, path.join(RAIZ, nombre)])
+);
+ARCHIVOS.set('/', path.join(RAIZ, 'index.html'));
+
 http.createServer((req, res) => {
-  const ruta = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-  const archivo = path.join(RAIZ, ruta === '/' ? 'index.html' : ruta);
-  if (!archivo.startsWith(RAIZ)) { res.writeHead(403); return res.end(); }
+  const ruta = new URL(req.url, 'http://localhost').pathname;
+  const archivo = ARCHIVOS.get(ruta);
+  if (!archivo) { res.writeHead(404); return res.end('No encontrado'); }
 
   fs.readFile(archivo, (err, datos) => {
-    if (err) { res.writeHead(404); return res.end('No encontrado'); }
+    if (err) { res.writeHead(500); return res.end('Error al leer el archivo'); }
     res.writeHead(200, { 'Content-Type': TIPOS[path.extname(archivo)] || 'application/octet-stream' });
     res.end(datos);
   });
