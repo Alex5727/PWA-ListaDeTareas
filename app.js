@@ -1,6 +1,6 @@
 
 /* Constantes y conexion con supabase*/
-const SUPABASE_URL = 'ttps://ydtwjwuxrydpfqijfhzw.supabase.co';
+const SUPABASE_URL = 'https://ydtwjwuxrydpfqijfhzw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_y9kPBo6ZwsZKQ2g6QMuZbg_rfga3T9o';
 const TABLE = 'tasks';
 const UPDATED_COL = 'updated_ar';   // Escribi mal el nombre en la DB xddd
