@@ -1,9 +1,9 @@
 # ============================================================
 # CI/CD - PWA ListaDeTareas
 # Flujo de ramas: feature/* -> develop -> main
-#   - Cualquier rama / Pull Request: build + test   (Integración continua)
-#   - develop: build + test                          (Entrega continua: versión lista para publicar)
-#   - main:    build + test + deploy automático      (Despliegue continuo a GitLab Pages)
+#   - Cualquier rama:  build + test                      (Integración continua)
+#   - develop:         build + test + prueba funcional   (Entrega continua)
+#   - main:            build + test + deploy automático  (Despliegue continuo a GitLab Pages)
 # ============================================================
 
 default:
@@ -12,6 +12,7 @@ default:
 stages:
   - build
   - test
+  - functional
   - deploy
 
 variables:
@@ -26,8 +27,7 @@ build:
   script:
     - mkdir -p public
     - cp $PWA_FILES public/
-    # Versiona el caché del Service Worker con el commit actual.
-    # Solo tiene efecto si sw.js contiene el texto __VERSION__ (ver instrucciones).
+    # Versiona el caché del Service Worker con el commit actual
     - sed -i "s/__VERSION__/$CI_COMMIT_SHORT_SHA/g" public/sw.js
     - echo "Build de la version $CI_COMMIT_SHORT_SHA listo"
   artifacts:
@@ -36,7 +36,7 @@ build:
     expire_in: 1 week
 
 # ------------------------------------------------------------
-# 2) TEST: validaciones automáticas antes de publicar
+# 2) TEST: validaciones estáticas antes de publicar
 # ------------------------------------------------------------
 test:
   stage: test
@@ -51,7 +51,30 @@ test:
     - echo "Todas las pruebas pasaron correctamente"
 
 # ------------------------------------------------------------
-# 3) DEPLOY: publica en GitLab Pages solo desde la rama main
+# 3) PRUEBA FUNCIONAL (solo develop): abre la PWA en un navegador
+#    real (Chromium) y comprueba que las tareas se cargan desde
+#    Supabase y se muestran en la lista.
+#    La versión de la imagen y la de @playwright/test DEBEN coincidir.
+# ------------------------------------------------------------
+prueba-funcional:
+  stage: functional
+  image: mcr.microsoft.com/playwright:v1.61.0-noble
+  script:
+    - npm install --no-save --no-package-lock @playwright/test@1.61.0
+    - npx playwright test --config=playwright.config.cjs
+  artifacts:
+    when: always
+    paths:
+      - resultados/
+      - test-results/
+    reports:
+      junit: resultados/junit.xml
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+# ------------------------------------------------------------
+# 4) DEPLOY: publica en GitLab Pages solo desde la rama main
 # ------------------------------------------------------------
 pages:
   stage: deploy
