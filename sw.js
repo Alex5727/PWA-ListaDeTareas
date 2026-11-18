@@ -1,5 +1,5 @@
 
-const CACHE = 'tareas-sb-__v1__';
+const CACHE = 'tareas-sb-__VERSION__';
 
 const SHELL = [
     './',
